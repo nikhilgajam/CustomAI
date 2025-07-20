@@ -45,12 +45,11 @@ npm run lint     # Run ESLint
 ## 🔧 Server (Backend)
 
 ### Technology Stack
-- **Node.js** with **Express** 5.1.0 - Web framework
-- **MongoDB** with **Mongoose** 8.13.2 - Database
+- **Node.js** with **Express** - Web framework
+- **MongoDB** with **Mongoose** - Database
 - **JWT** - Authentication
 - **Bcrypt** - Password hashing
 - **Multer** - File upload handling
-- **Cloudinary** - Cloud storage
 - **Google GenAI** - AI model integration
 - **CORS** - Cross-origin resource sharing
 
