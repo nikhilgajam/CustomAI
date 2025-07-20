@@ -32,11 +32,11 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
       contents: [
         {
           role: 'system',
-          content: initialPrompt
+          parts: [{ data: { text: initialPrompt } }]
         },
         {
           role: 'user',
-          content: userPrompt
+          parts: [{ data: { text: userPrompt } }]
         }
       ],
     });
