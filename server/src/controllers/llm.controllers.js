@@ -8,7 +8,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
 export const generateAIResponse = asyncHandler(async (req, res, next) => {
   const { userInput } = req?.body || {};
 
-  if (userInput === undefined || userInput === null) {
+  if (!userInput) {
     throw new ErrorResponse(400, 'User input is required.');
   }
 
@@ -25,22 +25,22 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
       initialPrompt += `\n${textData}`;
     }
 
-    const userPrompt = userInput || 'No user input provided.';
+    const combinedPrompt = `${initialPrompt}\n\nUser Input:\n${userInput}`;
 
     const response = await ai.models.generateContent({
       model: process.env.GOOGLE_GENAI_MODEL, // Ex: gemini-2.5-flash-lite
       contents: [
         {
-          role: 'system',
-          parts: [{ data: initialPrompt }]
-        },
-        {
           role: 'user',
-          parts: [{ data: userPrompt }]
+          parts: [{ text: combinedPrompt }]
         }
       ],
     });
-    return res.json(new SuccessResponse(200, response?.text));
+
+    const result = await response.response; // You must await `.response` to get the actual content
+    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+
+    return res.json(new SuccessResponse(200, [text, result]));
   } catch (error) {
     throw new ErrorResponse(500, 'Error generating AI response.', [error?.message]);
   }
