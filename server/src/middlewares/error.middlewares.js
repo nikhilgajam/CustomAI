@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { ErrorResponse } from '../utils/errorResponse.js';
+import { ErrorResponse } from '../utils/ErrorResponse.js';
 
 const errorHandler = (err, req, res, next) => {
   let error = err;
