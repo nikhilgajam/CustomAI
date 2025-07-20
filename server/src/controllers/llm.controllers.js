@@ -38,9 +38,9 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
     });
 
     const result = await response.response; // You must await `.response` to get the actual content
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+    const text = result || 'No response';
 
-    return res.json(new SuccessResponse(200, [text, result]));
+    return res.json(new SuccessResponse(200, text));
   } catch (error) {
     throw new ErrorResponse(500, 'Error generating AI response.', [error?.message]);
   }
