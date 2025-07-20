@@ -1,0 +1,52 @@
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: black;
+  font: 16px/1.5 Helvetica, Arial, sans-serif;
+  color: white;
+}
+
+header {
+  top: 0;
+  padding: 6px;
+  margin: 0;
+  position: fixed;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  background-color: #111827;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 9990;
+}
+
+.header-logo-button {
+  margin-left: 0.3rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.header-sign-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  color: white;
+  font-size: medium;
+  border: 1px solid grey;
+  border-radius: 4px;
+  padding: 0.6rem 0.9rem;
+  margin-right: 1.2rem;
+}
+
+.header-logo-button:hover, .header-sign-button:hover {
+  opacity: 0.6;
+}
+
+.home-page {
+  padding: 6px;
+  margin-top: 2rem;
+}

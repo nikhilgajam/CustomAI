@@ -1,0 +1,23 @@
+import { SuccessResponse } from '../utils/SuccessResponse.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+
+const healthcheck = asyncHandler( async (req, res, next) => {
+  const data = {
+    status: 'OK',
+    timestamp: new Date()?.toISOString(),
+    uptime: process?.uptime(),
+    memoryUsage: process?.memoryUsage(),
+    RequestMethod: req?.method,
+    RequestURL: req?.originalUrl,
+    RequestHeaders: req?.headers,
+    UserIP: req?.ip,
+    nodeVersion: process?.version,
+    platform: process?.platform,
+    arch: process?.arch,
+  }
+  return res
+    .status(200)
+    .json(new SuccessResponse(200, data, 'Health Check Passed'));
+});
+
+export { healthcheck }
