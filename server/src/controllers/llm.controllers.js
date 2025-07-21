@@ -21,7 +21,7 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
       initialPrompt += '\nUser Data:';
       initialPrompt += `\nUser name: ${req?.user?.userName}`;
       initialPrompt += `\nUser email: ${req?.user?.email}`;
-      initialPrompt += `\nGive concise output unless elaborated or detailed answer is asked`;
+      initialPrompt += '\nGive concise output unless asked for elaborated or detailed answer';
       initialPrompt += `\n\nUse the below given data if the user asks something from this context:`;
       initialPrompt += `\n${textData}`;
     }
@@ -38,7 +38,7 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
       ],
     });
 
-    const result = response?.candidates[0]?.content?.parts[0]?;
+    const result = response?.candidates[0]?.content?.parts[0];
     const text = result?.text || 'No response';
 
     return res.json(new SuccessResponse(200, text));
