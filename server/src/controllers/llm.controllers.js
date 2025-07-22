@@ -14,16 +14,17 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
 
   try {
     const data = await Data.findOne({ userName: req?.user?.userName });
-    let initialPrompt = data?.initialPrompt || 'You are a helpful AI assistant.';
+    let initialPrompt = 'Your Role:\n';
+    initialPrompt += data?.initialPrompt || 'You are a helpful AI assistant.';
     const textData = data?.txtData || '';
 
     if (textData) {
-      initialPrompt += '\nUser Data:';
+      initialPrompt += '\n\nUser Data for Context:';
       initialPrompt += `\nUser name: ${req?.user?.userName}`;
       initialPrompt += `\nUser email: ${req?.user?.email}`;
-      initialPrompt += '\nGive concise output unless asked for elaborated or detailed answer';
       initialPrompt += `\n\nUse the below given data if the user asks something from this context:`;
       initialPrompt += `\n${textData}`;
+      initialPrompt += '\n\nGive concise and small output unless user asks for elaborated or detailed answer';
     }
 
     const combinedPrompt = `${initialPrompt}\n\nUser Input:\n${userInput}`;

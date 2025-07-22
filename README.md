@@ -1,12 +1,14 @@
 # CustomAI
 
-A full-stack AI application that provides a secure platform for interacting with custom AI models. Built with React frontend and Node.js/Express backend.
+A full stack AI application that provides a secure platform for interacting with customized LLM. Built with React and Express.
+
 
 **Developer:** Nikhil Gajam
 
+
 ## Deployment URL's:
-- Backend:   custom-ai-backend.vercel.app
-- Frontend:  custom-ai-ui.vercel.app
+- Backend:   https://custom-ai-backend.vercel.app
+- Frontend:  https://custom-ai-ui.vercel.app
 
 ## 🚀 Project Overview
 
@@ -192,6 +194,7 @@ ISC License
 **Nikhil Gajam**
 - GitHub: [nikhilgajam](https://github.com/nikhilgajam)
 - YouTube: [nikhiltech](https://youtube.com/nikhiltech)
+- LinkedIn [nikhilgajam](https://in.linkedin.com/in/nikhilgajam)
 
 ## 🤝 Contributing
 
@@ -203,4 +206,4 @@ ISC License
 
 ## 📞 Support
 
-For support and questions, please reach out through the developer's GitHub or YouTube channels.
+For any questions, please reach out through the GitHub or LinkedIn.

@@ -39,12 +39,12 @@ function Home() {
           <div className="hero-buttons">
             <button
               className="btn-primary"
-              onClick={() => window.location.href = '/signup'}
+              onClick={() => window.location.href = '/chat'}
             >Get Started</button>
             <button
               className="btn-secondary"
-              onClick={() => window.open("https://github.com/nikhilgajam/CustomAI", "_blank")}
-            >GitHub</button>
+              onClick={() => window.location.href = '/signup'}
+            >Sign Up</button>
           </div>
         </div>
         <div className="hero-visual">
@@ -55,7 +55,7 @@ function Home() {
       {/* Features Section */}
       <section className="features">
         <div className="container">
-          <h2 className="section-title">Powerful AI Features</h2>
+          <h2 className="section-title">Useful Features</h2>
           <div className="features-grid">
             <div className="feature-card">
               <div className="feature-icon">

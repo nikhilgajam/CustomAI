@@ -7,9 +7,13 @@ function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    const chatOrUpdate = (
+      window.location.pathname === '/chat'
+      || window.location.pathname === '/update'
+    );
+    
     const token = getToken();
-    const chatOrUpdate = (window.location.href.endsWith('/chat') || window.location.href.endsWith('/update'));
-    if (chatOrUpdate && token !== null) {
+    if (token !== null) {
       setIsLoggedIn(true);
     } else if (chatOrUpdate && token === null) {
       deleteToken();
@@ -47,7 +51,7 @@ function Header() {
         className='header-logo-button'
         onClick={() => window.location.href = '/'}
       >
-        <img src='/logo.png' alt='Custom AI' title='Custom AI' width={40} />
+        <img src='/logo.png' alt='CustomAI' title='CustomAI' width={40} />
       </button>
 
       {/* Sign Button */}

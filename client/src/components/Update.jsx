@@ -12,6 +12,7 @@ function Update() {
     initialPrompt: '',
     txtFile: null
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -44,6 +45,7 @@ function Update() {
 
   const handleSubmit = async (e) => {
     e?.preventDefault();
+    setIsLoading(true);
 
     const formDataToSend = new FormData();
     if (formData.email) formDataToSend.append('email', formData.email);
@@ -85,6 +87,8 @@ function Update() {
 
       toast.error('Update Error: ' + error?.response?.data?.message);
       console.error('Update Error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -175,9 +179,16 @@ function Update() {
             <button
               type="submit"
               className="signup-btn primary"
-              disabled={!isFormValid()}
+              disabled={!isFormValid() || isLoading}
             >
-              Update Profile
+              {isLoading ? (
+                <>
+                  <div className="spinner"></div>
+                  Updating...
+                </>
+              ) : (
+                'Update Profile'
+              )}
             </button>
           </form>
 

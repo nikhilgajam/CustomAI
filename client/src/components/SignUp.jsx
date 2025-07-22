@@ -11,6 +11,7 @@ function SignUp() {
     initialPrompt: '',
     txtFile: null
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -34,6 +35,7 @@ function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const formDataToSend = new FormData();
     formDataToSend.append('userName', formData.userName);
@@ -50,6 +52,8 @@ function SignUp() {
     } catch (error) {
       toast.error('Sign Up Error: ' + error?.response?.data?.message);
       console.error('Sign Up Error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -141,8 +145,15 @@ function SignUp() {
               </label>
             </div>
 
-            <button type="submit" className="signup-btn primary">
-              Sign Up
+            <button type="submit" className="signup-btn primary" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <div className="spinner"></div>
+                  Signing Up...
+                </>
+              ) : (
+                'Sign Up'
+              )}
             </button>
           </form>
 

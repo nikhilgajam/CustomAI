@@ -9,6 +9,7 @@ function SignIn() {
     userName: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -19,6 +20,7 @@ function SignIn() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await signInRequest(formData);
@@ -27,6 +29,8 @@ function SignIn() {
     } catch (error) {
       toast.error('Sign In Error: ' + error?.response?.data?.message);
       console.error('Sign In Error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -75,8 +79,15 @@ function SignIn() {
               <label className="signin-label">Password</label>
             </div>
 
-            <button type="submit" className="signin-btn primary">
-              Sign In
+            <button type="submit" className="signin-btn primary" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <div className="spinner"></div>
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 

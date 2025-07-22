@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import './Chat.css';
 import toast, { Toaster } from 'react-hot-toast';
 import { llmRequest, renewTokensRequest } from '../utils/apiRequests';
@@ -8,7 +8,7 @@ function Chat() {
   const [messages, setMessages] = useState([
     {
       id: crypto.randomUUID(),
-      text: "Welcome to CustomAI. What would you like to know?",
+      text: "Welcome to CustomAI. What would you like to ask?",
       sender: 'ai',
       timestamp: new Date()
     }
@@ -17,6 +17,8 @@ function Chat() {
   const [isListening, setIsListening] = useState(false);
   const [selectedVoice, setSelectedVoice] = useState(0);
   const [voices, setVoices] = useState([]);
+  const [currentSpeakingId, setCurrentSpeakingId] = useState(null);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
   const inputRef = useRef(null);
@@ -28,6 +30,26 @@ function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+  
+  // Stop speech when component unmounts or page changes
+  useEffect(() => {
+    // Add event listener for page navigation
+    const handleBeforeUnload = () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Cleanup function when component unmounts
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   useEffect(() => {
     // Load available voices
@@ -35,26 +57,32 @@ function Chat() {
       const availableVoices = speechSynthesis.getVoices();
       setVoices(availableVoices);
 
-      // Find the best English voice available
-      // First try Google US English, then any US English, then any English voice
+      // Find the best English voice available with improved mobile support
       let bestVoiceIndex = -1;
-
-      // Try Google US English first
+      
+      // First priority: Google US English
       bestVoiceIndex = availableVoices.findIndex(voice =>
-        voice.name.includes('Google') && voice.lang === 'en-US'
+        voice.name.includes('Google') && (voice.lang === 'en-US' || voice.lang === 'en_US')
       );
-
-      // If no Google voice, try any US English voice
+      
+      // Second priority: Any native US English voice
       if (bestVoiceIndex === -1) {
         bestVoiceIndex = availableVoices.findIndex(voice =>
-          voice.lang === 'en-US'
+          voice.lang === 'en-US' || voice.lang === 'en_US'
         );
       }
-
-      // If still no voice, try any English voice
+      
+      // Third priority: Any English voice
       if (bestVoiceIndex === -1) {
         bestVoiceIndex = availableVoices.findIndex(voice =>
-          voice.lang.startsWith('en')
+          voice.lang.startsWith('en') && !voice.name.includes('as_IN')
+        );
+      }
+      
+      // Fourth priority: Any voice that's not Assamese
+      if (bestVoiceIndex === -1) {
+        bestVoiceIndex = availableVoices.findIndex(voice =>
+          !voice.lang.includes('as') && !voice.name.includes('as_IN')
         );
       }
 
@@ -128,7 +156,8 @@ function Chat() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (inputText.trim()) {
+    if (inputText.trim() && !isSending) {
+      setIsSending(true);
       const newMessage = {
         id: crypto.randomUUID(),
         text: inputText,
@@ -172,6 +201,8 @@ function Chat() {
         }
 
         console.error('Error fetching AI response:', error);
+      } finally {
+        setIsSending(false);
       }
     }
   };
@@ -191,11 +222,20 @@ function Chat() {
     }
   };
 
-  const handleTextToSpeech = (text) => {
+  // Memoize stopSpeech to ensure consistent reference
+  const stopSpeech = useCallback(() => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setCurrentSpeakingId(null);
+    }
+  }, []);
+
+  const handleTextToSpeech = (text, messageId) => {
     if ('speechSynthesis' in window) {
       try {
         // Stop any ongoing speech
-        speechSynthesis.cancel();
+        stopSpeech();
+        setCurrentSpeakingId(messageId);
 
         // Mobile browsers often have issues with long text
         // Use smaller chunks for mobile
@@ -244,7 +284,11 @@ function Chat() {
               // When this chunk ends, speak the next one
               utterance.onend = () => {
                 currentChunkIndex++;
-                speakNextChunk();
+                if (currentChunkIndex >= textChunks.length) {
+                  setCurrentSpeakingId(null);
+                } else {
+                  speakNextChunk();
+                }
               };
 
               speechSynthesis.speak(utterance);
@@ -265,6 +309,11 @@ function Chat() {
             utterance.rate = 0.9;
             utterance.pitch = 1;
             utterance.volume = 1;
+            
+            // Clear speaking message ID when the last utterance ends
+            if (chunk === textChunks[textChunks.length - 1]) {
+              utterance.onend = () => setCurrentSpeakingId(null);
+            }
 
             speechSynthesis.speak(utterance);
           });
@@ -284,11 +333,32 @@ function Chat() {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.sender === 'ai') {
         setTimeout(() => {
-          handleTextToSpeech(lastMessage.text);
+          handleTextToSpeech(lastMessage.text, lastMessage.id);
         }, 500);
       }
     }
   }, [messages, voices]);
+  
+  // Monitor speech synthesis status
+  useEffect(() => {
+    const handleSpeechEnd = () => {
+      if (window.speechSynthesis.pending === false && 
+          window.speechSynthesis.speaking === false) {
+        setCurrentSpeakingId(null);
+      }
+    };
+    
+    // Check speech status periodically
+    const interval = setInterval(handleSpeechEnd, 100);
+    
+    return () => {
+      clearInterval(interval);
+      // Ensure speech is stopped when this effect is cleaned up
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   const formatTime = (timestamp) => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -296,6 +366,63 @@ function Chat() {
 
   // Check if device is mobile
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  // State to control mobile menu visibility
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Force voice selection update on mobile
+  const handleVoiceChange = (e) => {
+    const newVoiceIndex = parseInt(e.target.value);
+    setSelectedVoice(newVoiceIndex);
+    
+    // On mobile, immediately test the voice to ensure it's selected
+    if (isMobile && voices.length > 0 && newVoiceIndex < voices.length) {
+      try {
+        speechSynthesis.cancel(); // Stop any ongoing speech
+        const utterance = new SpeechSynthesisUtterance('Voice selected');
+        utterance.voice = voices[newVoiceIndex];
+        utterance.volume = 0.5; // Lower volume for test
+        speechSynthesis.speak(utterance);
+        
+        // Close mobile menu after selection
+        setShowMobileMenu(false);
+      } catch (error) {
+        console.error('Error testing voice:', error);
+      }
+    }
+  };
+  
+  // Toggle mobile menu
+  const toggleMobileMenu = () => {
+    setShowMobileMenu(prev => !prev);
+  };
+  
+  // Handle keyboard shortcuts and close mobile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobile && showMobileMenu && 
+          !event.target.closest('.chat-controls') && 
+          !event.target.closest('.menu-toggle-btn')) {
+        setShowMobileMenu(false);
+      }
+    };
+    
+    const handleKeyDown = (event) => {
+      // Focus input when '/' is pressed
+      if (event.key === '/' && document.activeElement !== inputRef.current) {
+        event.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobile, showMobileMenu]);
 
   return (
     <div className={`chat-page ${isMobile ? 'mobile' : ''}`}>
@@ -311,12 +438,25 @@ function Chat() {
         {/* Header */}
         <div className="chat-header">
           <div className="chat-title">
-            <h1 style={{ cursor: 'default' }}>CustomAI</h1>
-            <div className="chat-controls">
+            <div className="title-row" style={{ marginTop: isMobile ? '40px' : '0' }}>
+              <h1 style={{ cursor: 'default' }}>CustomAI</h1>
+              {isMobile && (
+                <button 
+                  className="menu-toggle-btn" 
+                  onClick={toggleMobileMenu}
+                  aria-label="Toggle menu"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 18H21V16H3V18ZM3 13H21V11H3V13ZM3 6V8H21V6H3Z" fill="currentColor" />
+                  </svg>
+                </button>
+              )}
+            </div>
+            <div className={`chat-controls ${isMobile && showMobileMenu ? 'show' : ''}`}>
               <select
                 title="Select Voice"
                 value={selectedVoice}
-                onChange={(e) => setSelectedVoice(parseInt(e.target.value))}
+                onChange={handleVoiceChange}
                 className="voice-selector"
               >
                 {voices.map((voice, index) => (
@@ -329,6 +469,7 @@ function Chat() {
                 title="Update Profile"
                 className="update-btn"
                 onClick={() => window.location.href = '/update'}
+                style={{ width: isMobile ? '100%' : 'auto' }}
               >
                 Update Profile
               </button>
@@ -337,7 +478,7 @@ function Chat() {
         </div>
 
         {/* Messages Area */}
-        <div className="messages-container">
+        <div className="messages-container" style={{ marginTop: isMobile ? '40px' : '0' }}>
           <div className="messages-list">
             {messages.map((message) => (
               <div key={message.id} className={`message ${message.sender}`}>
@@ -347,13 +488,19 @@ function Chat() {
                     <span className="message-time">{formatTime(message.timestamp)}</span>
                     {message.sender === 'ai' && (
                       <button
-                        className="speak-btn"
-                        onClick={() => handleTextToSpeech(message.text)}
-                        title="Speak this message"
+                        className={`speak-btn ${currentSpeakingId === message.id ? 'speaking' : ''}`}
+                        onClick={() => currentSpeakingId === message.id ? stopSpeech() : handleTextToSpeech(message.text, message.id)}
+                        title={currentSpeakingId === message.id ? "Stop" : "Speak this message"}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M3 9V15H7L12 20V4L7 9H3ZM16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z" fill="currentColor" />
-                        </svg>
+                        {currentSpeakingId === message.id ? (
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 6h12v12H6z" fill="#ff5252" />
+                          </svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 9V15H7L12 20V4L7 9H3ZM16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12Z" fill="currentColor" />
+                          </svg>
+                        )}
                       </button>
                     )}
                   </div>
@@ -391,12 +538,16 @@ function Chat() {
                 <button
                   type="submit"
                   className="send-btn"
-                  disabled={!inputText.trim()}
+                  disabled={!inputText.trim() || isSending}
                   title="Send message"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor" />
-                  </svg>
+                  {isSending ? (
+                    <div className="spinner-white"></div>
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor" />
+                    </svg>
+                  )}
                 </button>
               </div>
             </div>
