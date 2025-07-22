@@ -124,7 +124,7 @@
 						{
 							"key": "txtFile",
 							"type": "file",
-							"src": "/Users/gajamnik/Downloads/text.txt"
+							"src": "/Users/nikhil/Downloads/text.txt"
 						}
 					]
 				},
@@ -172,7 +172,7 @@
 						{
 							"key": "txtFile",
 							"type": "file",
-							"src": "/Users/gajamnik/Downloads/text.txt"
+							"src": "/Users/nikhil/Downloads/text.txt"
 						}
 					]
 				},
@@ -264,8 +264,13 @@
 					}
 				],
 				"body": {
-					"mode": "formdata",
-					"formdata": []
+					"mode": "raw",
+					"raw": "{\n    \"userInput\": \"Prompt\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
 				},
 				"url": "{{basePath}}/api/v1/llm/generateAIResponse"
 			},
