@@ -4,6 +4,10 @@ A full-stack AI application that provides a secure platform for interacting with
 
 **Developer:** Nikhil Gajam
 
+## Deployment URL's:
+- Backend:   custom-ai-backend.vercel.app
+- Frontend:  custom-ai-ui.vercel.app
+
 ## 🚀 Project Overview
 
 CustomAI is a comprehensive AI platform that allows users to register, authenticate, and interact with AI models through a secure API. The application features user management, file uploads, and AI response generation capabilities.
@@ -74,22 +78,22 @@ http://localhost:PORT/api/v1
 ```
 
 ### Health Check
-- **GET** `/healthcheck/` - Check API health status
+- **GET** `/api/v1/healthcheck/` - Check API health status
 
 ### User Management Routes
 #### Public Routes
-- **POST** `/user/register` - Register new user (with file upload)
-- **POST** `/user/login` - User login
-- **POST** `/user/renewAccessToken` - Refresh access token
-- **POST** `/user/logout` - User logout
+- **POST** `/api/v1/user/register` - Register new user (with file upload)
+- **POST** `/api/v1/user/login` - User login
+- **POST** `/api/v1/user/renewAccessToken` - Refresh access token
+- **POST** `/api/v1/user/logout` - User logout
 
 #### Protected Routes (Require Authentication)
-- **PUT** `/user/edit` - Edit user profile (with file upload)
-- **DELETE** `/user/delete` - Delete user account
+- **PUT** `/api/v1/user/edit` - Edit user profile (with file upload)
+- **DELETE** `/api/v1/user/delete` - Delete user account
 
 ### AI/LLM Routes
 #### Protected Routes (Require Authentication)
-- **POST** `/llm/generateAIResponse` - Generate AI response
+- **POST** `/api/v1/llm/generateAIResponse` - Generate AI response
 
 ### Root Endpoint
 - **GET** `/` - API information and developer details
@@ -118,7 +122,7 @@ DB_NAME=CustomAI
 MONGODB_SRV=mongodb://localhost:27017
 CORS_ORIGIN=http://localhost:5173
 ACCESS_TOKEN_SECRET=custom_ai_access_secret
-ACCESS_TOKEN_EXPIRY=1m
+ACCESS_TOKEN_EXPIRY=18m
 REFRESH_TOKEN_SECRET=custom_ai_refresh_secret
 REFRESH_TOKEN_EXPIRY=10d
 NODE_ENV=development

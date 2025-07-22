@@ -132,7 +132,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
 });
 
 const renewAccessToken = asyncHandler(async (req, res, next) => {
-  const { refreshToken: incomingRefreshToken } = req?.cookies || req?.body;
+  const incomingRefreshToken = req?.cookies?.refreshToken || req?.body?.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ErrorResponse(401, 'No refresh token found. Please login again.');

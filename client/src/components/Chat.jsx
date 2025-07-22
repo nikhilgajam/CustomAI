@@ -2,13 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import './Chat.css';
 import toast, { Toaster } from 'react-hot-toast';
 import { llmRequest, renewTokensRequest } from '../utils/apiRequests';
-import { setToken, deleteToken } from '../utils/tokenManager';
+import { getToken, setToken, deleteToken } from '../utils/tokenManager';
 
 function Chat() {
   const [messages, setMessages] = useState([
     {
       id: crypto.randomUUID(),
-      text: "Hello! How can I assist you today?",
+      text: "Welcome to CustomAI. What would you like to know?",
       sender: 'ai',
       timestamp: new Date()
     }
@@ -19,6 +19,7 @@ function Chat() {
   const [voices, setVoices] = useState([]);
   const messagesEndRef = useRef(null);
   const recognitionRef = useRef(null);
+  const inputRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -34,17 +35,45 @@ function Chat() {
       const availableVoices = speechSynthesis.getVoices();
       setVoices(availableVoices);
 
-      // Set Google US English as default
-      const googleVoice = availableVoices.findIndex(voice =>
+      // Find the best English voice available
+      // First try Google US English, then any US English, then any English voice
+      let bestVoiceIndex = -1;
+
+      // Try Google US English first
+      bestVoiceIndex = availableVoices.findIndex(voice =>
         voice.name.includes('Google') && voice.lang === 'en-US'
       );
-      if (googleVoice !== -1) {
-        setSelectedVoice(googleVoice);
+
+      // If no Google voice, try any US English voice
+      if (bestVoiceIndex === -1) {
+        bestVoiceIndex = availableVoices.findIndex(voice =>
+          voice.lang === 'en-US'
+        );
+      }
+
+      // If still no voice, try any English voice
+      if (bestVoiceIndex === -1) {
+        bestVoiceIndex = availableVoices.findIndex(voice =>
+          voice.lang.startsWith('en')
+        );
+      }
+
+      // If we found a suitable voice, set it as default
+      if (bestVoiceIndex !== -1) {
+        setSelectedVoice(bestVoiceIndex);
+      } else if (availableVoices.length > 0) {
+        // Fallback to first available voice
+        setSelectedVoice(0);
       }
     };
 
+    // Initial load
     loadVoices();
-    speechSynthesis.onvoiceschanged = loadVoices;
+
+    // Handle voice loading in different browsers
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
 
     // Initialize speech recognition
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -58,6 +87,7 @@ function Chat() {
         const transcript = event.results[0][0].transcript;
         setInputText(transcript);
         setIsListening(false);
+        inputRef.current?.focus();
       };
 
       recognitionRef.current.onerror = () => {
@@ -79,9 +109,16 @@ function Chat() {
     };
 
     try {
-      const aiResponse = await llmRequest({ userInput: newMessage.text });
-      console.log(aiResponse);
-      newAIResponse.text = aiResponse.data || aiResponse.data;
+      const token = getToken();
+      if (token === null) {
+        toast.error('Session expired. Please sign in again.');
+        window.location.href = '/signin';
+        deleteToken();
+        return;
+      }
+
+      const aiResponse = await llmRequest({ userInput: newMessage.text }, token.accessToken);
+      newAIResponse.text = aiResponse.data;
       setMessages(prev => [...prev, newAIResponse]);
     } catch (error) {
       toast.error(error?.response?.data?.message || 'An error occurred');
@@ -108,18 +145,28 @@ function Chat() {
         const message = error?.response?.data?.message || 'An error occurred while updating your profile.';
         if (message === 'jwt expired') {
           try {
-            await renewTokensRequest();
+            const token = getToken();
+            if (token === null) {
+              toast.error('Session expired. Please sign in again.');
+              window.location.href = '/signin';
+              deleteToken();
+              return;
+            }
+
+            // Renew access and refresh tokens
+            const response = await renewTokensRequest({ refreshToken: token.refreshToken });
             toast.success('Session renewed successfully!');
 
             // Adding new token
             deleteToken();
-            setToken();
+            setToken(response.data.accessToken, response.data.refreshToken);
 
             // Retry the original request
             processAIRequest(newMessage);
           } catch (renewError) {
             toast.error('Session renewal failed: ' + renewError?.response?.data?.message);
             console.error('Renew Error:', renewError);
+            window.location.href = '/signin';
           }
           return;
         }
@@ -146,20 +193,86 @@ function Chat() {
 
   const handleTextToSpeech = (text) => {
     if ('speechSynthesis' in window) {
-      // Stop any ongoing speech
-      speechSynthesis.cancel();
+      try {
+        // Stop any ongoing speech
+        speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(text);
+        // Mobile browsers often have issues with long text
+        // Use smaller chunks for mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const chunkSize = isMobile ? 100 : 200; // Smaller chunks for mobile
+        const textChunks = [];
 
-      if (voices.length > 0 && selectedVoice < voices.length) {
-        utterance.voice = voices[selectedVoice];
+        // Simple sentence splitting that works in all browsers
+        const sentences = text.split(/[.!?]\s+/);
+        let currentChunk = '';
+
+        sentences.forEach(sentence => {
+          // Add period back to sentence if it was removed by split
+          const formattedSentence = sentence.trim() + (sentence.trim().length > 0 ? '. ' : '');
+
+          // If adding this sentence would exceed chunk size, push current chunk and start new one
+          if (currentChunk.length + formattedSentence.length > chunkSize) {
+            if (currentChunk) textChunks.push(currentChunk);
+            currentChunk = formattedSentence;
+          } else {
+            currentChunk += formattedSentence;
+          }
+        });
+
+        // Add the last chunk if it exists
+        if (currentChunk) textChunks.push(currentChunk);
+
+        // For mobile browsers, we need to handle speech differently
+        if (isMobile) {
+          // Speak one chunk at a time with manual queue management
+          let currentChunkIndex = 0;
+
+          const speakNextChunk = () => {
+            if (currentChunkIndex < textChunks.length) {
+              const utterance = new SpeechSynthesisUtterance(textChunks[currentChunkIndex]);
+
+              // Make sure voice is valid for this browser
+              if (voices.length > 0 && selectedVoice < voices.length) {
+                utterance.voice = voices[selectedVoice];
+              }
+
+              utterance.rate = 0.9;
+              utterance.pitch = 1;
+              utterance.volume = 1;
+
+              // When this chunk ends, speak the next one
+              utterance.onend = () => {
+                currentChunkIndex++;
+                speakNextChunk();
+              };
+
+              speechSynthesis.speak(utterance);
+            }
+          };
+
+          // Start speaking the first chunk
+          speakNextChunk();
+        } else {
+          // Desktop browsers can handle multiple utterances in queue
+          textChunks.forEach((chunk) => {
+            const utterance = new SpeechSynthesisUtterance(chunk);
+
+            if (voices.length > 0 && selectedVoice < voices.length) {
+              utterance.voice = voices[selectedVoice];
+            }
+
+            utterance.rate = 0.9;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            speechSynthesis.speak(utterance);
+          });
+        }
+      } catch (error) {
+        console.error('Speech synthesis error:', error);
+        toast.error('Speech synthesis failed');
       }
-
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-
-      speechSynthesis.speak(utterance);
     } else {
       toast.error('Text-to-speech not supported in this browser');
     }
@@ -181,8 +294,11 @@ function Chat() {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  // Check if device is mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   return (
-    <div className="chat-page">
+    <div className={`chat-page ${isMobile ? 'mobile' : ''}`}>
       <Toaster
         toastOptions={{
           style: {
@@ -253,6 +369,7 @@ function Chat() {
           <form className="chat-input-form" onSubmit={handleSendMessage}>
             <div className="input-wrapper">
               <input
+                ref={inputRef}
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}

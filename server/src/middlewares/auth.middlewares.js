@@ -6,7 +6,8 @@ import jwt from 'jsonwebtoken';
 const verifyJWT = asyncHandler(async (req, _, next) => {
   try {
     // Checking if the token is present in cookies for PC or in the authorization header for Mobile
-    const token = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
+    const authHeader = req.headers.authorization || req.header('Authorization');
+    const token = req.cookies?.accessToken || (authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
 
     if (!token) {
       console.log('No token found');

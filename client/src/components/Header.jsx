@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { getToken, deleteToken } from '../utils/tokenManager';
-import axios from 'axios';
 import toast, { Toaster } from 'react-hot-toast';
 import { signOutRequest } from '../utils/apiRequests';
 
@@ -13,6 +12,7 @@ function Header() {
     if (chatOrUpdate && token !== null) {
       setIsLoggedIn(true);
     } else if (chatOrUpdate && token === null) {
+      deleteToken();
       window.location.href = '/signin';
     }
   }, []);

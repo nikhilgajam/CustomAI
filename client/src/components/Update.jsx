@@ -2,7 +2,7 @@ import { useState } from 'react';
 import './SignUp.css';
 import toast, { Toaster } from 'react-hot-toast';
 import { updateRequest, renewTokensRequest } from '../utils/apiRequests';
-import { setToken, deleteToken } from '../utils/tokenManager';
+import { getToken, setToken, deleteToken } from '../utils/tokenManager';
 
 function Update() {
   const [formData, setFormData] = useState({
@@ -52,25 +52,33 @@ function Update() {
     if (formData.initialPrompt) formDataToSend.append('initialPrompt', formData.initialPrompt);
     if (formData.txtFile) formDataToSend.append('txtFile', formData.txtFile);
 
+    const token = getToken();
     try {
-      const res = await updateRequest(formDataToSend);
+      if (token === null) {
+        deleteToken();
+        toast.error('Session expired. Please sign in again.');
+        window.location.href = '/signin';
+        return;
+      }
+
+      await updateRequest(formDataToSend, token.accessToken);
       toast.success('Profile updated successfully!');
-      console.log(res.data);
     } catch (error) {
       const message = error?.response?.data?.message || 'An error occurred while updating your profile.';
       if (message === 'jwt expired') {
         try {
-          await renewTokensRequest();
+          const response = await renewTokensRequest({ refreshToken: token.refreshToken });
           toast.success('Session renewed successfully!');
 
           // Adding new token
           deleteToken();
-          setToken();
+          setToken(response.data.accessToken, response.data.refreshToken);
 
           handleSubmit();
         } catch (renewError) {
           toast.error('Session renewal failed: ' + renewError?.response?.data?.message);
           console.error('Renew Error:', renewError);
+          window.location.href = '/signin';
         }
         return;
       }

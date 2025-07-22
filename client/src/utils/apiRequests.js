@@ -23,9 +23,12 @@ export const signUpRequest = async (data) => {
   }
 };
 
-export const updateRequest = async (data) => {
+export const updateRequest = async (data, accessToken) => {
   try {
     const response = await axios.put(`${apiUrl}/api/v1/user/edit`, data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
       withCredentials: true
     });
     return response.data;
@@ -34,9 +37,12 @@ export const updateRequest = async (data) => {
   }
 };
 
-export const llmRequest = async (data) => {
+export const llmRequest = async (data, accessToken) => {
   try {
     const response = await axios.post(`${apiUrl}/api/v1/llm/generateAIResponse`, data, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
       withCredentials: true
     });
     return response.data;
@@ -47,7 +53,7 @@ export const llmRequest = async (data) => {
 
 export const renewTokensRequest = async (data) => {
   try {
-    const response = await axios.post(`${apiUrl}/api/v1/user/renewAccessToken`, {}, {
+    const response = await axios.post(`${apiUrl}/api/v1/user/renewAccessToken`, data, {
       withCredentials: true
     });
     return response.data;

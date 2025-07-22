@@ -6,6 +6,7 @@ import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import Update from './components/Update';
 import Chat from './components/Chat';
+import ErrorPage from './components/ErrorPage';
 import './index.css';
 
 import {
@@ -17,7 +18,7 @@ import {
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path='/' element={<Layout />}>
+    <Route path='/' element={<Layout />} errorElement={<ErrorPage />}>
       <Route index element={<Home />} />
       <Route path='signin' element={<SignIn />} />
       <Route path='signup' element={<SignUp />} />

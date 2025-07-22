@@ -21,8 +21,8 @@ function SignIn() {
     e.preventDefault();
 
     try {
-      await signInRequest(formData);
-      setToken();
+      const response = await signInRequest(formData);
+      setToken(response.data.accessToken, response.data.refreshToken);
       window.location.href = '/chat';
     } catch (error) {
       toast.error('Sign In Error: ' + error?.response?.data?.message);
