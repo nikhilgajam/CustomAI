@@ -24,7 +24,10 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
       initialPrompt += `\nUser email: ${req?.user?.email}`;
       initialPrompt += `\n\nUse the below given data if the user asks something from this context:`;
       initialPrompt += `\n${textData}`;
-      initialPrompt += '\n\nGive concise and small output unless user asks for elaborated or detailed answer';
+      initialPrompt += '\n\nOutput generation rules:';
+      initialPrompt += '\nGive concise and small output unless user asks for elaborated or detailed answer.';
+      initialPrompt += '\nDo not give any special character in the response like * etc.';
+      initialPrompt += '\nGive only facts and if question is answerable with above data try to answer from that.';
     }
 
     const combinedPrompt = `${initialPrompt}\n\nUser Input:\n${userInput}`;

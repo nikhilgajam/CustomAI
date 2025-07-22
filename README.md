@@ -80,22 +80,22 @@ http://localhost:PORT/api/v1
 ```
 
 ### Health Check
-- **GET** `/api/v1/healthcheck/` - Check API health status
+- **GET** `/healthcheck/` - Check API health status
 
 ### User Management Routes
 #### Public Routes
-- **POST** `/api/v1/user/register` - Register new user (with file upload)
-- **POST** `/api/v1/user/login` - User login
-- **POST** `/api/v1/user/renewAccessToken` - Refresh access token
-- **POST** `/api/v1/user/logout` - User logout
+- **POST** `/user/register` - Register new user (with file upload)
+- **POST** `/user/login` - User login
+- **POST** `/user/renewAccessToken` - Refresh access token
+- **POST** `/user/logout` - User logout
 
 #### Protected Routes (Require Authentication)
-- **PUT** `/api/v1/user/edit` - Edit user profile (with file upload)
-- **DELETE** `/api/v1/user/delete` - Delete user account
+- **PUT** `/user/edit` - Edit user profile (with file upload)
+- **DELETE** `/user/delete` - Delete user account
 
 ### AI/LLM Routes
 #### Protected Routes (Require Authentication)
-- **POST** `/api/v1/llm/generateAIResponse` - Generate AI response
+- **POST** `/llm/generateAIResponse` - Generate AI response
 
 ### Root Endpoint
 - **GET** `/` - API information and developer details
@@ -134,7 +134,7 @@ GOOGLE_GENAI_API_KEY=your_google_genai_api_key
 
 ### Client (.env)
 ```env
-VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_API_BASE_URL=http://localhost:PORT
 ```
 
 ## 🚀 Getting Started
@@ -156,7 +156,7 @@ cd CustomAI
 ```bash
 cd server
 npm install
-cp .env.example .env  # Configure your environment variables
+cp .env.example .env  # Optional: Configure your environment variables
 npm run dev
 ```
 
@@ -164,7 +164,7 @@ npm run dev
 ```bash
 cd client
 npm install
-cp .env.example .env  # Configure your environment variables
+cp .env.example .env  # Optional: Configure your environment variables
 npm run dev
 ```
 
