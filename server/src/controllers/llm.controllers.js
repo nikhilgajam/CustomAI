@@ -25,7 +25,6 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
       prompt += '\n----------------------------';
       prompt += '\n\nContext Data:\n';
       prompt += data?.txtData;
-      prompt += `\n${textData}`;
     }
 
     prompt += '\n----------------------------';
@@ -35,7 +34,7 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
     prompt += '\n3. Not contain * (asterisk) symbol in the output response.';
 
     prompt += '\n----------------------------';
-    prompt += `\n\nUser Input:\n${userInput}`;
+    prompt += `\n\nUser Input: ${userInput}`;
 
     const response = await ai.models.generateContent({
       model: process.env.GOOGLE_GENAI_MODEL, // Ex: gemini-2.5-flash-lite
