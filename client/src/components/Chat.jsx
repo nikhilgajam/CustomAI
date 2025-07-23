@@ -275,6 +275,12 @@ function Chat() {
               // Make sure voice is valid for this browser
               if (voices.length > 0 && selectedVoice < voices.length) {
                 utterance.voice = voices[selectedVoice];
+
+                // Force voice setting on mobile
+                if (isMobile) {
+                  utterance.voiceURI = voices[selectedVoice].voiceURI;
+                  utterance.lang = voices[selectedVoice].lang;
+                }
               }
 
               utterance.rate = 0.9;
@@ -304,6 +310,10 @@ function Chat() {
 
             if (voices.length > 0 && selectedVoice < voices.length) {
               utterance.voice = voices[selectedVoice];
+
+              // Force voice setting for better compatibility
+              utterance.voiceURI = voices[selectedVoice].voiceURI;
+              utterance.lang = voices[selectedVoice].lang;
             }
 
             utterance.rate = 0.9;
@@ -379,10 +389,15 @@ function Chat() {
     if (isMobile && voices.length > 0 && newVoiceIndex < voices.length) {
       try {
         speechSynthesis.cancel(); // Stop any ongoing speech
-        const utterance = new SpeechSynthesisUtterance('Voice selected');
-        utterance.voice = voices[newVoiceIndex];
-        utterance.volume = 0.5; // Lower volume for test
-        speechSynthesis.speak(utterance);
+        
+        setTimeout(() => {
+          const utterance = new SpeechSynthesisUtterance('Voice selected');
+          utterance.voice = voices[newVoiceIndex];
+          utterance.volume = 0.5; // Lower volume for test
+          utterance.rate = 1;
+          utterance.pitch = 1;
+          speechSynthesis.speak(utterance);
+        }, 100);
         
         // Close mobile menu after selection
         setShowMobileMenu(false);

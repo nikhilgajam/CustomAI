@@ -14,30 +14,35 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
 
   try {
     const data = await Data.findOne({ userName: req?.user?.userName });
-    let initialPrompt = 'Your Role:\n';
-    initialPrompt += data?.initialPrompt || 'You are a helpful AI assistant.';
-    const textData = data?.txtData || '';
+    let prompt = 'Your Role:\n';
+    prompt += data?.initialPrompt || 'You are a helpful AI assistant.';
+    prompt += '\n----------------------------';
+    prompt += '\n\nUser Data:';
+    prompt += `\nUser Name: ${req?.user?.userName}`;
+    prompt += `\nUser Email: ${req?.user?.email}`;
 
-    if (textData) {
-      initialPrompt += '\n\nUser Data for Context:';
-      initialPrompt += `\nUser name: ${req?.user?.userName}`;
-      initialPrompt += `\nUser email: ${req?.user?.email}`;
-      initialPrompt += `\n\nUse the below given data if the user asks something from this context:`;
-      initialPrompt += `\n${textData}`;
-      initialPrompt += '\n\nOutput generation rules:';
-      initialPrompt += '\nGive concise and small output unless user asks for elaborated or detailed answer.';
-      initialPrompt += '\nDo not give any special character in the response like * etc.';
-      initialPrompt += '\nGive only facts and if question is answerable with above data try to answer from that.';
+    if (data?.txtData) {
+      prompt += '\n----------------------------';
+      prompt += '\n\nContext Data:\n';
+      prompt += data?.txtData;
+      prompt += `\n${textData}`;
     }
 
-    const combinedPrompt = `${initialPrompt}\n\nUser Input:\n${userInput}`;
+    prompt += '\n----------------------------';
+    prompt += '\n\nResponse should:';
+    prompt += '\n1. Be concise and small unless user asks for elaborated or detailed response.';
+    prompt += '\n2. Contain only facts and if question is answerable with above given data try to answer from that.';
+    prompt += '\n3. Not contain * (asterisk) symbol in the output response.';
+
+    prompt += '\n----------------------------';
+    prompt += `\n\nUser Input:\n${userInput}`;
 
     const response = await ai.models.generateContent({
       model: process.env.GOOGLE_GENAI_MODEL, // Ex: gemini-2.5-flash-lite
       contents: [
         {
           role: 'user',
-          parts: [{ text: combinedPrompt }]
+          parts: [{ text: prompt }]
         }
       ],
     });
