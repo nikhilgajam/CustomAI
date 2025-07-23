@@ -36,8 +36,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
   // Check if user already exists
   const user = await User.findOne({
     $or: [
-      { userName: userName.toLowerCase() },
-      { email: email.toLowerCase() },
+      { userName: userName.trim().toLowerCase() },
+      { email: email.trim().toLowerCase() },
     ]
   });
 
@@ -62,13 +62,13 @@ const registerUser = asyncHandler(async (req, res, next) => {
   }
 
   const createdUser = await User.create({
-    userName: userName.toLowerCase(),
-    email: email.toLowerCase(),
-    password: password.toLowerCase(),
+    userName: userName.trim().toLowerCase(),
+    email: email.trim().toLowerCase(),
+    password: password.trim(),
   });
 
   await Data.create({
-    userName: userName.toLowerCase(),
+    userName: userName.trim().toLowerCase(),
     initialPrompt,
     txtData,
   });
@@ -106,7 +106,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
   }
 
   // Check if password is correct
-  const validPassword = await user.comparePassword(password);
+  const validPassword = await user.comparePassword(password?.trim());
 
   if (!validPassword) {
     throw new ErrorResponse(401, 'Invalid credentials. Please try again.');
@@ -198,7 +198,7 @@ const editUser = asyncHandler(async (req, res, next) => {
 
   // Update user details
   if (email?.trim())
-    user.email = email.toLowerCase();
+    user.email = email.trim().toLowerCase();
 
   if (newPassword?.trim()) {
     // Check if old password is provided
@@ -216,7 +216,7 @@ const editUser = asyncHandler(async (req, res, next) => {
   }
 
   if (initialPrompt?.trim())
-    data.initialPrompt = initialPrompt;
+    data.initialPrompt = initialPrompt.trim();
 
   if (req?.file?.buffer) {
     // Check if the uploaded file is a PDF

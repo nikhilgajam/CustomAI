@@ -28,10 +28,7 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
     }
 
     prompt += '\n----------------------------';
-    prompt += '\n\nResponse should:';
-    prompt += '\n1. Be concise and small unless user asks for elaborated or detailed response.';
-    prompt += '\n2. Contain only facts and if question is answerable with above given data try to answer from that.';
-    prompt += '\n3. Not contain * (asterisk) symbol in the output response.';
+    prompt += '\n\nResponse should not contain * (asterisk) symbol. If * needs to be there then convert * to \n';
 
     prompt += '\n----------------------------';
     prompt += `\n\nUser Input: ${userInput}`;

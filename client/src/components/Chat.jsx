@@ -240,7 +240,7 @@ function Chat() {
         // Mobile browsers often have issues with long text
         // Use smaller chunks for mobile
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        const chunkSize = isMobile ? 100 : 200; // Smaller chunks for mobile
+        const chunkSize = isMobile ? 90 : 96; // Smaller chunks for mobile
         const textChunks = [];
 
         // Simple sentence splitting that works in all browsers
