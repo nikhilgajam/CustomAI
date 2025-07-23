@@ -6,6 +6,8 @@ import { GoogleGenAI } from '@google/genai';
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
 
 export const generateAIResponse = asyncHandler(async (req, res, next) => {
+  console.info('generateAIResponse: Started.');
+
   const { userInput } = req?.body || {};
 
   if (!userInput) {
@@ -22,13 +24,14 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
     prompt += `\nUser Email: ${req?.user?.email}`;
 
     if (data?.txtData) {
+      console.info('generateAIResponse: Contains txtData.');
       prompt += '\n----------------------------';
       prompt += '\n\nContext Data:\n';
       prompt += data?.txtData;
     }
 
     prompt += '\n----------------------------';
-    prompt += '\n\nResponse should not contain * (asterisk) symbol. If * needs to be there then convert * to \n';
+    prompt += '\n\nTry not to add any special symbols in the response.';
 
     prompt += '\n----------------------------';
     prompt += `\n\nUser Input: ${userInput}`;
@@ -44,10 +47,13 @@ export const generateAIResponse = asyncHandler(async (req, res, next) => {
     });
 
     const result = response?.candidates[0]?.content?.parts[0];
-    const text = result?.text || 'No response';
+    let text = result?.text || 'No response.';
+    text = text.replace(/\*/g, '');
 
+    console.info('generateAIResponse: Executed successfully.');
     return res.json(new SuccessResponse(200, text));
   } catch (error) {
+    console.error('generateAIResponse error:', error);
     throw new ErrorResponse(500, 'Error generating AI response.', [error?.message]);
   }
 });

@@ -240,7 +240,7 @@ function Chat() {
         // Mobile browsers often have issues with long text
         // Use smaller chunks for mobile
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-        const chunkSize = isMobile ? 90 : 96; // Smaller chunks for mobile
+        const chunkSize = isMobile ? 100 : 200; // Smaller chunks for mobile
         const textChunks = [];
 
         // Simple sentence splitting that works in all browsers
@@ -277,10 +277,8 @@ function Chat() {
                 utterance.voice = voices[selectedVoice];
 
                 // Force voice setting on mobile
-                if (isMobile) {
-                  utterance.voiceURI = voices[selectedVoice].voiceURI;
-                  utterance.lang = voices[selectedVoice].lang;
-                }
+                utterance.voiceURI = voices[selectedVoice].voiceURI;
+                utterance.lang = voices[selectedVoice].lang;
               }
 
               utterance.rate = 0.9;
@@ -344,7 +342,7 @@ function Chat() {
       if (lastMessage.sender === 'ai') {
         setTimeout(() => {
           handleTextToSpeech(lastMessage.text, lastMessage.id);
-        }, 500);
+        }, 200);
       }
     }
   }, [messages, voices]);
@@ -498,7 +496,7 @@ function Chat() {
             {messages.map((message) => (
               <div key={message.id} className={`message ${message.sender}`}>
                 <div className="message-content">
-                  <p>{message.text}</p>
+                  <pre>{message.text}</pre>
                   <div className="message-actions">
                     <span className="message-time">{formatTime(message.timestamp)}</span>
                     {message.sender === 'ai' && (

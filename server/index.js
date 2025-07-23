@@ -21,7 +21,6 @@ const requiredVars = [
   'GOOGLE_GENAI_API_KEY',
 ];
 const missingVars = requiredVars.filter(varName => !process.env[varName]);
-
 if (missingVars.length > 0) {
   console.error('Missing environment variables:', missingVars);
   process.exit(1);
@@ -31,7 +30,7 @@ await connectDB();
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(process.env.PORT || 9000, () => {
-    console.log(`\n ⚙️ Server is running at port : ${process.env.PORT} 🚀 \n`);
+    console.info(`\n ⚙️ Server is running at port : ${process.env.PORT} 🚀 \n`);
   });
 }
 

@@ -181,10 +181,14 @@
   border-bottom-left-radius: 4px;
 }
 
-.message-content p {
+.message-content p,
+.message-content pre {
   margin: 0;
   line-height: 1.5;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: inherit;
 }
 
 .message-actions {

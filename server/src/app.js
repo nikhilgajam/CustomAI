@@ -11,8 +11,6 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
-console.log('Environment variables loaded:', process.env.CORS_ORIGIN);
-
 // Defining express app object
 const app = express();
 
