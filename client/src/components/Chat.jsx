@@ -24,12 +24,34 @@ function Chat() {
   const inputRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isMobile && messagesEndRef.current) {
+      // For mobile, use scrollTop to avoid issues with browser UI
+      const container = messagesEndRef.current.parentElement;
+      setTimeout(() => {
+        container.scrollToTop = container.scrollHeight;
+      }, 100);
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle mobile viewport changes
+  useEffect(() => {
+    if (isMobile && window.visualViewport) {
+      const handleViewportChange = () => {
+        setTimeout(scrollToBottom, 150);
+      }
+
+      window.visualViewport.addEventListenere('resize', handleViewportChange);
+      return () => {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+      }
+    }
+  }, [messages])
   
   // Stop speech when component unmounts or page changes
   useEffect(() => {

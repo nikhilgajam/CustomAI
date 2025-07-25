@@ -112,7 +112,9 @@ const loginUser = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({
     $or: [
       { userName: userName.trim().toLowerCase() },
+      { userName: email.trim().toLowerCase() }, // Allow when userName is provided in email field
       { email: email.trim().toLowerCase() },
+      { email: userName.trim().toLowerCase() }, // Allow when email is provided in userName field
     ]
   }).select('+password');
 
