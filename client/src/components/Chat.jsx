@@ -46,7 +46,7 @@ function Chat() {
         setTimeout(scrollToBottom, 150);
       }
 
-      window.visualViewport.addEventListenere('resize', handleViewportChange);
+      window.visualViewport.addEventListener('resize', handleViewportChange);
       return () => {
         window.visualViewport.removeEventListener('resize', handleViewportChange);
       }
