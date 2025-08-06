@@ -1,12 +1,14 @@
 const TOKEN_KEY = 'CustomAI';
 
 // Set tokens with expiration time
-export const setToken = (accessToken, refreshToken) => {
+export const setToken = (accessToken, refreshToken, userName, email) => {
   const expiration = Date.now() + ((10 * 24 * 60 * 60 * 1000) - (10 * 60 * 1000)); // (10 days - 10 minutes) in milliseconds
   const tokenData = {
     accessToken,
     refreshToken,
-    expirationTime: expiration
+    expirationTime: expiration,
+    userName,
+    email
   };
   localStorage.setItem(TOKEN_KEY, JSON.stringify(tokenData));
 };

@@ -24,6 +24,19 @@ function Chat() {
   const recognitionRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Check if device is mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  // Prevent body scroll on mobile
+  useEffect(() => {
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = 'auto';
+      }
+    }
+  }, [isMobile]);
+
   const scrollToBottom = () => {
     if (isMobile && messagesEndRef.current) {
       // For mobile, use scrollTop to avoid issues with browser UI
@@ -271,7 +284,6 @@ function Chat() {
 
         // Mobile browsers often have issues with long text
         // Use smaller chunks for mobile
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         const chunkSize = isMobile ? 100 : 200; // Smaller chunks for mobile
         const textChunks = [];
 
@@ -403,9 +415,6 @@ function Chat() {
   const formatTime = (timestamp) => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
-
-  // Check if device is mobile
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   
   // State to control mobile menu visibility
   const [showMobileMenu, setShowMobileMenu] = useState(false);
