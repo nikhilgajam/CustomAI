@@ -56,15 +56,9 @@ function Chat() {
   // Handle mobile viewport changes and keyboard
   useEffect(() => {
     if (isMobile) {
-      const handleFocus = () => {
-        setTimeout(scrollToBottom, 300);
-      }
-
       const handleViewportChange = () => {
         setTimeout(scrollToBottom, 150);
       }
-
-      inputRef.current?.addEventListener('focus', handleFocus);
 
       if (window.visualViewport) {
         window.visualViewport.addEventListener('resize', handleViewportChange);
