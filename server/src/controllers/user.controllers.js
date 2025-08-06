@@ -200,7 +200,7 @@ const renewAccessToken = asyncHandler(async (req, res, next) => {
     .cookie('accessToken', accessToken, options)
     .json(new SuccessResponse(
       200,
-      { accessToken, refreshToken: newRefreshToken },
+      { accessToken, refreshToken: newRefreshToken, user: { userName: user?.userName, email: user?.email } },
       'Refresh token renewed successfully.'
     ));
 });

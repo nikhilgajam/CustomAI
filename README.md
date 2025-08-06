@@ -2,11 +2,8 @@
 
 A full stack AI application that provides a secure platform for interacting with customized LLM. Built with React and Express.
 
-
-**Developer:** Nikhil Gajam
-
-
 ## Deployment URL's:
+
 - Backend:   https://custom-ai-backend.vercel.app
 - Frontend:  https://custom-ai-ui.vercel.app
 
@@ -111,9 +108,16 @@ The API uses JWT (JSON Web Tokens) for authentication. Protected routes require 
 
 ## 📁 File Upload
 
-The application supports file uploads through Multer middleware with Cloudinary integration for cloud storage. File uploads are available on:
+The application supports file uploads through Multer middleware. File uploads are available on:
 - User registration
 - User profile editing
+
+## 🪙 Rate Limiting
+
+This application supports rate limiting to ensure fair usage for all users.
+- General rate limit: 100 requests per 15 minutes.
+- Authentication rate limit: 10 requests per 10 minutes.
+- AI response generation rate limit: 10 requests per 1 minute.
 
 ## 🌐 Environment Variables
 

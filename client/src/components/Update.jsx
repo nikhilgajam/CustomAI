@@ -6,7 +6,7 @@ import { getToken, setToken, deleteToken } from '../utils/tokenManager';
 
 function Update() {
   const [formData, setFormData] = useState({
-    email: '',
+    email: getToken()?.email || '',
     oldPassword: '',
     newPassword: '',
     initialPrompt: '',

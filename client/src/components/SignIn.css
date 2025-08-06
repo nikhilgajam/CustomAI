@@ -70,7 +70,7 @@
 .signin-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
 }
 
 .input-group {
@@ -183,6 +183,10 @@
 .signin-footer p {
   color: #aaaaaa;
   font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .signup-btn {
@@ -191,7 +195,7 @@
   color: #00d4ff;
   font-weight: 600;
   cursor: pointer;
-  margin-left: 0.5rem;
+  margin-left: 0;
   transition: all 0.3s ease;
   text-decoration: underline;
   text-underline-offset: 3px;

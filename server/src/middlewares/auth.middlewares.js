@@ -33,7 +33,7 @@ const verifyJWT = asyncHandler(async (req, _, next) => {
 
     // Adding user to request object which can be used by controllers which uses this middleware
     req.user = user;
-    console.info('User authenticated:', user?.userName);
+    console.info('verifyJWT: User authenticated:', user?.userName);
 
     console.info('verifyJWT: Executed Successfully.');
     // Proceed to the next middleware or route handler

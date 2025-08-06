@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { upload } from '../middlewares/multer.middlewares.js';
 import { verifyJWT } from '../middlewares/auth.middlewares.js';
+import { authLimiter } from '../middlewares/rateLimiter.middlewares.js';
 import {
   registerUser,
   loginUser,
@@ -14,11 +15,12 @@ const router = Router();
 
 // Public Routes
 router.route('/register').post(
+  authLimiter,
   upload.single('txtFile'),
   registerUser
 );
-router.route('/login').post(loginUser);
-router.route('/renewAccessToken').post(renewAccessToken);
+router.route('/login').post(authLimiter, loginUser);
+router.route('/renewAccessToken').post(authLimiter, renewAccessToken);
 router.route('/logout').post(logoutUser);
 
 // Secure Routes

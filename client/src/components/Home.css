@@ -229,6 +229,8 @@
 .feature-card:nth-child(2).animate { animation-delay: 0.2s; }
 .feature-card:nth-child(3).animate { animation-delay: 0.3s; }
 .feature-card:nth-child(4).animate { animation-delay: 0.4s; }
+.feature-card:nth-child(5).animate { animation-delay: 0.5s; }
+.feature-card:nth-child(6).animate { animation-delay: 0.6s; }
 
 .feature-card:hover {
   transform: translateY(-8px);
@@ -374,11 +376,10 @@
   margin-bottom: 3rem;
   opacity: 0;
   transform: translateY(30px);
-  animation: fadeInUp 0.8s ease-out forwards;
 }
 
 .developer-intro.animate {
-  animation-delay: 0.2s;
+  animation: fadeInUp 0.8s ease-out 0.2s forwards;
 }
 
 .developer-intro h3 {
@@ -416,10 +417,11 @@
   border: 1px solid rgba(255,255,255,0.1);
   opacity: 0;
   transform: translateY(30px);
-  animation: fadeInUp 0.8s ease-out forwards;
 }
 
-.skill-category.animate { animation-delay: 0.3s; }
+.skill-category.animate {
+  animation: fadeInUp 0.8s ease-out 0.3s forwards;
+}
 
 .skill-category h4 {
   color: #ffffff;
@@ -455,11 +457,10 @@
   gap: 1rem;
   opacity: 0;
   transform: translateY(30px);
-  animation: fadeInUp 0.8s ease-out forwards;
 }
 
 .developer-links.animate {
-  animation-delay: 0.7s;
+  animation: fadeInUp 0.8s ease-out 0.4s forwards;
 }
 
 .dev-link-btn {

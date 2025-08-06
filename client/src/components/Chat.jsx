@@ -5,10 +5,11 @@ import { llmRequest, renewTokensRequest } from '../utils/apiRequests';
 import { getToken, setToken, deleteToken } from '../utils/tokenManager';
 
 function Chat() {
+  const userName = useRef((getToken()?.userName?.charAt(0)?.toUpperCase() + getToken()?.userName?.slice(1)) || 'to Custom AI'); // Username with capital first letter
   const [messages, setMessages] = useState([
     {
       id: crypto.randomUUID(),
-      text: "Welcome to CustomAI. What would you like to ask?",
+      text: `Welcome ${userName.current}. What would you like to ask?`,
       sender: 'ai',
       timestamp: new Date()
     }
@@ -39,14 +40,23 @@ function Chat() {
     scrollToBottom();
   }, [messages]);
 
-  // Handle mobile viewport changes
+  // Handle mobile viewport changes and keyboard
   useEffect(() => {
-    if (isMobile && window.visualViewport) {
+    if (isMobile) {
+      const handleFocus = () => {
+        setTimeout(scrollToBottom, 300);
+      }
+
       const handleViewportChange = () => {
         setTimeout(scrollToBottom, 150);
       }
 
-      window.visualViewport.addEventListener('resize', handleViewportChange);
+      inputRef.current?.addEventListener('focus', handleFocus);
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', handleViewportChange);
+      }
+
       return () => {
         window.visualViewport.removeEventListener('resize', handleViewportChange);
       }
@@ -171,7 +181,7 @@ function Chat() {
       newAIResponse.text = aiResponse.data;
       setMessages(prev => [...prev, newAIResponse]);
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'An error occurred');
+      toast.error(error?.response?.data?.message || 'An error occurred while fetching AI response.');
       throw error;
     }
   }
@@ -193,7 +203,7 @@ function Chat() {
         // Get AI Response
         await processAIRequest(newMessage);
       } catch (error) {
-        const message = error?.response?.data?.message || 'An error occurred while updating your profile.';
+        const message = error?.response?.data?.message || 'An error occurred while fetching AI response.';
         if (message === 'jwt expired') {
           try {
             const token = getToken();
@@ -210,7 +220,7 @@ function Chat() {
 
             // Adding new token
             deleteToken();
-            setToken(response.data.accessToken, response.data.refreshToken);
+            setToken(response.data.accessToken, response.data.refreshToken, response.data.user.userName, response.data.user.email);
 
             // Retry the original request
             processAIRequest(newMessage);
