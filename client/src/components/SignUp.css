@@ -292,10 +292,6 @@
   .signup-title {
     font-size: 1.75rem;
   }
-  
-  .signup-form {
-    gap: 1.25rem;
-  }
 }
 
 /* Input autofill styling */
